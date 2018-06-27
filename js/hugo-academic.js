@@ -98,6 +98,31 @@
   });
 
   /* ---------------------------------------------------------------------------
+   * Filter projects.
+   * --------------------------------------------------------------------------- */
+
+  $('.projects-container').each(function(index, container) {
+    let $container = $(container);
+    let $section = $container.closest('section');
+
+    $container.imagesLoaded(function() {
+      // Initialize Isotope after all images have loaded.
+      $container.isotope({
+        itemSelector: '.isotope-item',
+        layoutMode: 'masonry',
+        filter: $section.find('.default-project-filter').text()
+      });
+      // Filter items when filter link is clicked.
+      $section.find('.project-filters a').click(function() {
+        let selector = $(this).attr('data-filter');
+        $container.isotope({filter: selector});
+        $(this).removeClass('active').addClass('active').siblings().removeClass('active all');
+        return false;
+      });
+    });
+  });
+
+  /* ---------------------------------------------------------------------------
    * Filter publications.
    * --------------------------------------------------------------------------- */
 
@@ -173,65 +198,41 @@
   }
 
   /* ---------------------------------------------------------------------------
-  * Google Maps or OpenStreetMap via Leaflet.
+  * Google maps.
   * --------------------------------------------------------------------------- */
 
   function initMap () {
     if ($('#map').length) {
-      let map_provider = $('#map-provider').val();
-      let lat = $('#map-lat').val();
-      let lng = $('#map-lng').val();
-      let zoom = parseInt($('#map-zoom').val());
-      let address = $('#map-dir').val();
-      let api_key = $('#map-api-key').val();
-      
-      if ( map_provider == 1 ) {
-        let map = new GMaps({
-          div: '#map',
-          lat: lat,
-          lng: lng,
-          zoom: zoom,
-          zoomControl: true,
-          zoomControlOpt: {
-            style: 'SMALL',
-            position: 'TOP_LEFT'
-          },
-          panControl: false,
-          streetViewControl: false,
-          mapTypeControl: false,
-          overviewMapControl: false,
-          scrollwheel: true,
-          draggable: true
-        });
+      let lat = $('#gmap-lat').val();
+      let lng = $('#gmap-lng').val();
+      let address = $('#gmap-dir').val();
 
-        map.addMarker({
-          lat: lat,
-          lng: lng,
-          click: function (e) {
-            let url = 'https://www.google.com/maps/place/' + encodeURIComponent(address) + '/@' + lat + ',' + lng +'/';
-            window.open(url, '_blank')
-          },
-          title: address
-        })
-      } else {
-          let map = new L.map('map').setView([lat, lng], zoom);
-          if ( map_provider == 3 && api_key.length ) {
-            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-              attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-              maxZoom: 18,
-              id: 'mapbox.streets',
-              accessToken: api_key
-            }).addTo(map);
-          } else {
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              maxZoom: 19,
-              attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
-          }
-          let marker = L.marker([lat, lng]).addTo(map);
-          let url = lat + ',' + lng +'#map='+ zoom +'/'+ lat +'/'+ lng +'&layers=N';
-          marker.bindPopup(address + '<p><a href="https://www.openstreetmap.org/directions?engine=osrm_car&route='+ url +'">Routing via OpenStreetMap</a></p>');
-      }
+      let map = new GMaps({
+        div: '#map',
+        lat: lat,
+        lng: lng,
+        zoomControl: true,
+        zoomControlOpt: {
+          style: 'SMALL',
+          position: 'TOP_LEFT'
+        },
+        panControl: false,
+        streetViewControl: false,
+        mapTypeControl: false,
+        overviewMapControl: false,
+        scrollwheel: true,
+        draggable: true
+      });
+
+      map.addMarker({
+        lat: lat,
+        lng: lng,
+        click: function (e) {
+          let url = 'https://www.google.com/maps/place/' + encodeURIComponent(address) + '/@' + lat + ',' + lng +'/';
+          window.open(url, '_blank')
+        },
+        title: address
+      })
     }
   }
 
@@ -259,32 +260,6 @@
     $(window).resize(function() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(fixScrollspy, 200);
-    });
-
-    // Filter projects.
-    $('.projects-container').each(function(index, container) {
-      let $container = $(container);
-      let $section = $container.closest('section');
-      let layout = 'masonry';
-      if ($section.find('.isotope').hasClass('js-layout-row')) {
-        layout = 'fitRows';
-      }
-
-      $container.imagesLoaded(function() {
-        // Initialize Isotope after all images have loaded.
-        $container.isotope({
-          itemSelector: '.isotope-item',
-          layoutMode: layout,
-          filter: $section.find('.default-project-filter').text()
-        });
-        // Filter items when filter link is clicked.
-        $section.find('.project-filters a').click(function() {
-          let selector = $(this).attr('data-filter');
-          $container.isotope({filter: selector});
-          $(this).removeClass('active').addClass('active').siblings().removeClass('active all');
-          return false;
-        });
-      });
     });
 
     // Enable publication filter for publication index page.
